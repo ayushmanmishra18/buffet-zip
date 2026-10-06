@@ -1,0 +1,54 @@
+BUFFET LOUNGE - FTP DEPLOY NOTES
+===============================
+Date: 2026-10-06 | Code: github.com/ayushmanmishra18/buffet (main @ be3a618+)
+
+1) UPLOAD
+- Upload the contents of Godwin(buffet)/Main/ into the site's public root
+  (or the folder your domain points to) via FileZilla. Overwrite all.
+- DO NOT upload a .env file. The zip has none. Keep the server's existing .env.
+- Server .env must have: APP_ENV=production, APP_DEBUG=false,
+  correct DB_* credentials, APP_URL=https://www.buffetlounge.in
+
+2) PHP REQUIREMENTS (cPanel Select PHP Version / server)
+- PHP 8.1 or 8.2 with extensions: curl, fileinfo, gd, mbstring,
+  openssl, pdo_mysql, sodium, zip, imagick (imagick = QR codes on restaurant pages)
+
+3) AFTER UPLOAD (cPanel Terminal, or ask host support)
+- php artisan storage:link        (recreates public/storage images link)
+- php artisan config:clear
+- php artisan view:clear
+- php artisan permission:cache-reset
+- Ensure storage/ and bootstrap/cache/ are writable (775)
+
+4) DATABASE (phpMyAdmin, in this order, skip what already ran)
+a) Main dump (only for fresh DB): Godwin(buffet)/Db/u739450562_buffet (1).sql
+b) Main/REGISTRATION_SQL.sql            (plans + restaurant applications)
+c) Main/SQL_COMMANDS.sql                (advertisements + menus + permissions)
+d) Main/FIX_LANGUAGE_FLAGS.sql          (flag emoji repair)
+e) Main/FIX_MENU_ITEM_STATUS.sql        (legacy status 1 -> 5)
+f) Main/FIX_CUISINE_NAMES.sql           (accented names repair)
+g) Main/FIX_RESTAURANT_PAYMENT_ACCESS.sql (payments menu + permissions)
+
+5) VERIFY LIVE (open each, expect no 500 page)
+- /  homepage (cuisine cards with hotel counts, ads show placeholders if files missing)
+- /search  (try name query + cuisine filter)
+- /restaurant/the-royal-spice  (Buffet section on top, Book Table, green/red slots)
+- /login, /register, /contact, /privacy, /terms
+- Admin: /admin/dashboard, /admin/coupon, /admin/reservation,
+  /admin/menu-items, /admin/restaurant-payment (new menu under Accounts),
+  /admin/orders, /admin/restaurant-application
+
+6) OWNER DATA HOMEWORK (admin panel, no code needed)
+- Assign cuisines to every restaurant (else cuisine filters/cards stay empty)
+- Fill restaurant lat/long (else geo search skips them)
+- Assign menu items to categories (else menu nav strip stays empty)
+- Each owner sets their item prices (admin price fields are locked) and
+  their UPI/QR + advance % + plan under Restaurant Payments
+
+7) NOTES
+- vendor/ is included, so composer install is NOT required.
+- Built CSS/JS (npm run prod) is included; npm install NOT required.
+- Old Stripe/PayPal/SSLCommerz/Paystack callback URLs were removed;
+  checkout is COD / Wallet / UPI / PhonePe QR / Paytm QR only.
+- storage/app/public uploads are NOT in this zip (except logo/banner files);
+  existing server uploads are left untouched.
